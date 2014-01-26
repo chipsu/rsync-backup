@@ -162,11 +162,11 @@ backup_main() {
                 log_push
                     # hack to create parent dir on remote...
                     tempDir="$(mktemp -d)"
-                    rsync $rsyncConfig -a --fake-super "$tempDir/" "$target"
+                    rsync $rsyncConfig --rsh="ssh -c arcfour" -a --fake-super "$tempDir/" "$target"
                     rmdir "$tempDir"
                 
                     # do it!
-                    rsync $rsyncConfig \
+                    rsync $rsyncConfig --rsh="ssh -c arcfour" \
                         -rltD --fake-super --no-o --no-g --chmod=ug=rwX --force --ignore-errors --delete-excluded \
                         --exclude-from "$exclude" \
                         --include-from "$include" \
