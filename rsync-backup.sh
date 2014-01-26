@@ -4,6 +4,8 @@
 #
 # Use at your own risk!
 #
+# @todo rsh config, use arcfour for LAN only
+#
 
 configDir=~/.rsync-backup
 rsyncConfig=""  
