@@ -5,6 +5,7 @@
 # Use at your own risk!
 #
 # @todo rsh config, use arcfour for LAN only
+# @todo fails silently of dst doesn't exist? (unmounted)
 #
 
 configDir=~/.rsync-backup
