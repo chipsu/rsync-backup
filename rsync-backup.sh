@@ -199,6 +199,15 @@ backup_main() {
                         log_err "Fail. Result = $?"
                         status=1
                     fi
+
+                    # delete backup dir if empty
+                    if [[ -d "$backup" ]]; then
+                        find "$backup" -mindepth 1 -print -quit | grep -q .
+                        if [[ $? != 0 ]]; then
+                            log "Delete empty backup dir: $backup"
+                            rmdir "$backup"
+                        fi
+                    fi
                 log_pop
             done
         done
