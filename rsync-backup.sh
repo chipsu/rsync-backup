@@ -9,7 +9,7 @@
 #
 
 configDir=~/.rsync-backup
-rsyncConfig=""  
+rsyncConfig=""
 dryRun=1
 
 while getopts ":rc:" opt; do
@@ -50,7 +50,7 @@ LEVEL=0
 cecho() {
 	echo -e "$2$1\033[0m" >&$((0$3))
 	tput sgr0
-} 
+}
 
 log() {
 	echo -n $(date --rfc-3339=seconds --utc)
@@ -95,7 +95,7 @@ backup_main() {
     }
 
     log "Starting..."
-    
+
     for configFile in "$configDir"/*.conf; do
         declare -A src
         src=()
@@ -104,21 +104,21 @@ backup_main() {
         include=
         delete=0
         disable=0
-        
+
         source "$configFile" || {
             log_err "Invalid configuration file $configFile"
             continue
         }
-        
+
         if [[ $disable != 0 ]]; then
             continue
         fi
-        
+
         # exclude include file
         if [[ $exclude == "" ]]; then
             exclude="$(basename "$configFile" .conf).exclude"
         fi
-        
+
         if [[ ! -f "$exclude" ]]; then
             if [[ -f "$configDir/$exclude" ]]; then
                 exclude="$configDir/$exclude"
@@ -127,12 +127,12 @@ backup_main() {
                 continue
             fi
         fi
-        
+
         # detect include file
         if [[ $include == "" ]]; then
             include="$(basename "$configFile" .conf).include"
         fi
-        
+
         if [[ ! -f "$include" ]]; then
             if [[ -f "$configDir/$include" ]]; then
                 include="$configDir/$include"
@@ -141,11 +141,11 @@ backup_main() {
                 continue
             fi
         fi
-        
+
         # loop destinations
         log "$(basename "$configFile")"
         log_push
-        
+
         for dstPath in "${dst[@]}"; do
             for srcIndex in "${!src[@]}"; do
                 source="${src[$srcIndex]}"
@@ -153,21 +153,33 @@ backup_main() {
                 current="$target/current"
                 #backup="$target/$(date +%Y%m%d-%H%M%S)"
                 backup="../backup-$(date +%Y/%Y%m%d-%H%M%S)"
-                
+
                 #if [[ ! -d "$current" ]]; then
                 #    mkdir -p "$current" || {
                 #        log_err "Could not create directory $current"
                 #        continue
                 #    }
                 #fi
-                
+
+                if [[ ! -d "$source" ]]; then
+                    log_err "source '$source' does not exist, skipping"
+                    continue
+                fi
+
+                find "$source" -mindepth 1 -print -quit | grep -q .
+
+                if [[ $? != 0 ]]; then
+                    log_err "source '$source' is empty, skipping"
+                    continue
+                fi
+
                 log "$source => $target"
                 log_push
                     # hack to create parent dir on remote...
                     tempDir="$(mktemp -d)"
                     rsync $rsyncConfig --rsh="ssh -c arcfour" -a --fake-super "$tempDir/" "$target"
                     rmdir "$tempDir"
-                
+
                     # do it!
                     rsync $rsyncConfig --rsh="ssh -c arcfour" \
                         -rltD --fake-super --no-o --no-g --chmod=ug=rwX --force --ignore-errors --delete-excluded \
@@ -190,7 +202,7 @@ backup_main() {
                 log_pop
             done
         done
-        
+
         log_pop
     done
 }
