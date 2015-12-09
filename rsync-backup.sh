@@ -201,11 +201,11 @@ backup_main() {
                     fi
 
                     # delete backup dir if empty
-                    if [[ -d "$backup" ]]; then
-                        find "$backup" -mindepth 1 -print -quit | grep -q .
+                    if [[ -d "$current/$backup" ]]; then
+                        find "$current/$backup" -mindepth 1 -print -quit | grep -q .
                         if [[ $? != 0 ]]; then
-                            log "Delete empty backup dir: $backup"
-                            rmdir "$backup"
+                            log "Delete empty backup dir: $current/$backup"
+                            rmdir "$current/$backup"
                         fi
                     fi
                 log_pop
